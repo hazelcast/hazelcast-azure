@@ -120,7 +120,6 @@ public class AzureDiscoveryStrategy implements DiscoveryStrategy {
             LOGGER.info("Azure Discovery SPI Discovered " + nodes.size() + " nodes");
             return nodes;
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.finest("Failed to discover nodes with Azure SPI", e);
             return null;
         }
