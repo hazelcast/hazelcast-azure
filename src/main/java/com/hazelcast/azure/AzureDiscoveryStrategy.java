@@ -20,6 +20,7 @@ package com.hazelcast.azure;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
 import com.hazelcast.nio.Address;
+import com.hazelcast.spi.ExceptionAction;
 import com.hazelcast.spi.discovery.AbstractDiscoveryStrategy;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.DiscoveryStrategy;
@@ -83,11 +84,11 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
     @Override
     public void start() {
         try {
-          Configuration config = AzureAuthHelper.getAzureConfiguration(this.properties);
-          this.computeManagement = ComputeManagementService.create(config);
-          this.networkManagement = NetworkResourceProviderService.create(config);
+            Configuration config = AzureAuthHelper.getAzureConfiguration(this.properties);
+            this.computeManagement = ComputeManagementService.create(config);
+            this.networkManagement = NetworkResourceProviderService.create(config);
         } catch (Exception e) {
-          LOGGER.finest("Failed to start Azure SPI", e);
+            LOGGER.finest("Failed to start Azure SPI", e);
         }
     }
 
@@ -124,7 +125,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
                 }
 
                 int port = Integer.parseInt(tags.get(clusterId));
-                final String  faultDomainId = vm.getInstanceView().getPlatformFaultDomain().toString();
+                final String faultDomainId = getFaultDomain(vmOps, vm, resourceGroup);
                 DiscoveryNode node = buildDiscoveredNode(faultDomainId, netProfile, port);
 
                 if (node != null) {
@@ -141,6 +142,17 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
 
     }
 
+    private String getFaultDomain(VirtualMachineOperations vmOps, VirtualMachine vm, String resourceGroup) {
+        try {
+            return vmOps.getWithInstanceView(resourceGroup, vm.getName())
+                    .getVirtualMachine()
+                    .getInstanceView()
+                    .getPlatformFaultDomain().toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public void destroy() {
         // no native resources were allocated so nothing to do here
@@ -150,15 +162,15 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
     * Determines if a VM is allocated, or not
     *
     * @param VirtualMachineOperations the vmOperations client
-    * @param VirtualMachine the VirtualMachine to check
+    * @param VirtualMachine           the VirtualMachine to check
     * @return boolean true if VirtualMachine is on
     */
     private boolean isVirtualMachineOn(VirtualMachineOperations vmOps, VirtualMachine vm)
-        throws IOException, ServiceException, URISyntaxException {
+            throws IOException, ServiceException, URISyntaxException {
 
         String rgName = AzureProperties.getOrNull(AzureProperties.GROUP_NAME, properties);
         VirtualMachine vmWithInstanceView = vmOps.getWithInstanceView(rgName,
-            vm.getName()).getVirtualMachine();
+                vm.getName()).getVirtualMachine();
         VirtualMachineInstanceView vmInstanceView = vmWithInstanceView.getInstanceView();
 
         for (InstanceViewStatus status : vmInstanceView.getStatuses()) {
@@ -207,7 +219,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
             String uri = nir.getReferenceUri();
             String nicName = getResourceNameFromUri(uri);
             NetworkInterface nic = nicOps.get(rgName, nicName).getNetworkInterface();
-            ArrayList<NetworkInterfaceIpConfiguration> ips =  nic.getIpConfigurations();
+            ArrayList<NetworkInterfaceIpConfiguration> ips = nic.getIpConfigurations();
 
             // TODO is it possilbe for NIC to have > 1
             // IP address configuration?
@@ -244,7 +256,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
         return null;
     }
 
-    private void fetchVirtualMachineMetaData (String faultDomain, String dnsDomainName) {
+    private void fetchVirtualMachineMetaData(String faultDomain, String dnsDomainName) {
 
         if (faultDomain != null) {
             memberMetaData.put(PartitionGroupMetaData.PARTITION_GROUP_ZONE, faultDomain);
@@ -255,7 +267,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
         }
     }
 
-    public  String getLocalHostAddress() {
+    public String getLocalHostAddress() {
         try {
             InetAddress candidateAddress = null;
             // Iterate all NICs (network interface cards)...
