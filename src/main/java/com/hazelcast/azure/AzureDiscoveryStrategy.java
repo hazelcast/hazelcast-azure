@@ -27,20 +27,13 @@ import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.partitiongroup.PartitionGroupMetaData;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.PagedList;
-import com.microsoft.azure.management.compute.InstanceViewStatus;
-import com.microsoft.azure.management.compute.VirtualMachine;
-import com.microsoft.azure.management.compute.VirtualMachineInstanceView;
+import com.microsoft.azure.management.compute.*;
 import com.microsoft.azure.management.compute.implementation.ComputeManager;
-import com.microsoft.azure.management.network.NetworkInterface;
-import com.microsoft.azure.management.network.NicIPConfiguration;
-import com.microsoft.azure.management.network.PublicIPAddress;
+import com.microsoft.azure.management.network.*;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -52,7 +45,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
 
     private final Map<String, Comparable> properties;
     private final Map<String, Object> memberMetaData = new HashMap<String, Object>();
-    
+
     private ComputeManager computeManager;
 
     /**
@@ -88,63 +81,103 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
             String resourceGroup = AzureProperties.getOrNull(AzureProperties.GROUP_NAME, properties);
             String clusterId = AzureProperties.getOrNull(AzureProperties.CLUSTER_ID, properties);
 
-            PagedList<VirtualMachine> virtualMachines = computeManager.virtualMachines().listByResourceGroup(resourceGroup);
-
             ArrayList<DiscoveryNode> nodes = new ArrayList<DiscoveryNode>();
 
-            for (VirtualMachine vm : virtualMachines) {
-                Map<String, String> tags = vm.tags();
-                // a tag is required with the hazelcast clusterid
-                // and the value should be the port number
-                if (tags.get(clusterId) == null) {
-                    continue;
-                }
+            nodes.addAll(discoverVMs(resourceGroup, clusterId));
+            nodes.addAll(discoverScaleSetVMs(resourceGroup, clusterId));
 
-                VirtualMachineInstanceView instanceView = vm.instanceView();
-                // skip any deallocated vms
-                if (!isVirtualMachineOn(instanceView)) {
-                    continue;
-                }
-
-                Integer faultDomainId = instanceView.platformFaultDomain();
-                if (faultDomainId != null) {
-                    memberMetaData.put(PartitionGroupMetaData.PARTITION_GROUP_ZONE, faultDomainId.toString());
-                }
-                int port = Integer.parseInt(tags.get(clusterId));
-                DiscoveryNode node = buildDiscoveredNode(faultDomainId, vm, port);
-
-                if (node != null) {
-                    nodes.add(node);
-                }
-            }
             LOGGER.info("Azure Discovery SPI Discovered " + nodes.size() + " nodes");
             return nodes;
         } catch (Exception e) {
             LOGGER.finest("Failed to discover nodes with Azure SPI", e);
             return null;
         }
+    }
 
+    private SimpleDiscoveryNode createDiscoveryNode(int port, VirtualMachineScaleSetVM vm,
+                                                    VirtualMachineScaleSetNetworkInterface networkInterface)
+            throws UnknownHostException {
+        String privateIP = networkInterface.primaryPrivateIP();
+        if (getLocalHostAddress() != null && privateIP.equals(getLocalHostAddress())) {
+            Integer faultDomainId = vm.instanceView().platformFaultDomain();
+            updateVirtualMachineMetaData(faultDomainId);
+        }
+        Address privateAddress = new Address(privateIP, port);
+        return new SimpleDiscoveryNode(privateAddress);
+    }
+
+    private List<DiscoveryNode> discoverScaleSetVMs(String resourceGroup, String clusterId)
+            throws UnknownHostException {
+        PagedList<VirtualMachineScaleSet> scaleSets = computeManager.virtualMachineScaleSets()
+                .listByResourceGroup(resourceGroup);
+        ArrayList<DiscoveryNode> nodes = new ArrayList<DiscoveryNode>();
+
+        for (VirtualMachineScaleSet scaleSet : scaleSets) {
+            Map<String, String> tags = scaleSet.tags();
+            // a tag is required with the hazelcast clusterid
+            // and the value should be the port number
+            if (tags.get(clusterId) == null) {
+                continue;
+            }
+            int port = Integer.parseInt(tags.get(clusterId));
+
+            PagedList<VirtualMachineScaleSetVM> vms = scaleSet.virtualMachines().list();
+
+            for (VirtualMachineScaleSetVM vm : vms) {
+                if (!PowerState.RUNNING.equals(vm.powerState())) {
+                    continue;
+                }
+
+                String primaryNetworkInterfaceId = vm.primaryNetworkInterfaceId();
+                if (primaryNetworkInterfaceId != null) {
+                    VirtualMachineScaleSetNetworkInterface networkInterface =
+                            vm.getNetworkInterface(primaryNetworkInterfaceId);
+                    nodes.add(createDiscoveryNode(port, vm, networkInterface));
+                } else {
+                    PagedList<VirtualMachineScaleSetNetworkInterface> networkInterfaces = vm.listNetworkInterfaces();
+                    if (networkInterfaces.size() > 0) {
+                        VirtualMachineScaleSetNetworkInterface networkInterface = networkInterfaces.get(0);
+                        nodes.add(createDiscoveryNode(port, vm, networkInterface));
+                    }
+                }
+            }
+        }
+        return nodes;
+    }
+
+    private List<DiscoveryNode> discoverVMs(String resourceGroup, String clusterId) throws UnknownHostException {
+        PagedList<VirtualMachine> virtualMachines = computeManager.virtualMachines().listByResourceGroup(resourceGroup);
+        ArrayList<DiscoveryNode> nodes = new ArrayList<DiscoveryNode>();
+
+        for (VirtualMachine vm : virtualMachines) {
+            Map<String, String> tags = vm.tags();
+            // a tag is required with the hazelcast clusterid
+            // and the value should be the port number
+            if (tags.get(clusterId) == null) {
+                continue;
+            }
+
+            if (!PowerState.RUNNING.equals(vm.powerState())) {
+                continue;
+            }
+
+            Integer faultDomainId = vm.instanceView().platformFaultDomain();
+            if (faultDomainId != null) {
+                memberMetaData.put(PartitionGroupMetaData.PARTITION_GROUP_ZONE, faultDomainId.toString());
+            }
+            int port = Integer.parseInt(tags.get(clusterId));
+            DiscoveryNode node = buildDiscoveredNode(faultDomainId, vm, port);
+
+            if (node != null) {
+                nodes.add(node);
+            }
+        }
+        return nodes;
     }
 
     @Override
     public void destroy() {
         // no native resources were allocated so nothing to do here
-    }
-
-    /**
-     * Determines if a VM is allocated, or not
-     *
-     * @param instanceView the VirtualMachine to check
-     * @return boolean true if VirtualMachine is on
-     */
-    private boolean isVirtualMachineOn(VirtualMachineInstanceView instanceView) {
-        for (InstanceViewStatus status : instanceView.statuses()) {
-            if (status.code().equals("PowerState/running")) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
