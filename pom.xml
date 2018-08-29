@@ -40,8 +40,8 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/hazelcast/hazelcast-azure.git</connection>
-        <developerConnection>scm:git:git@github.com:hazelcast/hazelcast-azure.git</developerConnection>
+        <connection>scm:git:git://github.com/atlassian/hazelcast-azure.git</connection>
+        <developerConnection>scm:git:git@github.com:atlassian/hazelcast-azure.git</developerConnection>
         <url>https://github.com/hazelcast/hazelcast/</url>
     </scm>
 
@@ -66,14 +66,12 @@
 
     <distributionManagement>
         <repository>
-            <id>release-repository</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+            <id>atlassian-3rdparty</id>
+            <url>https://packages.atlassian.com/maven/3rdparty</url>
         </repository>
         <snapshotRepository>
-            <id>snapshot-repository</id>
-            <name>Maven2 Snapshot Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
+            <id>atlassian-3rdparty-snapshot</id>
+            <url>https://packages.atlassian.com/maven/3rdparty-snapshot</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -224,6 +222,37 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>${maven.sonar.plugin.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-license</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${user.dir}</directory>
+                                    <includes>
+                                        <include>LICENSE.txt</include>
+                                        <include>NOTICE.txt</include>
+                                        <include>license.txt</include>
+                                        <include>notice.txt</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
