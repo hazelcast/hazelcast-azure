@@ -27,13 +27,23 @@ import com.hazelcast.spi.discovery.SimpleDiscoveryNode;
 import com.hazelcast.spi.partitiongroup.PartitionGroupMetaData;
 import com.microsoft.azure.CloudException;
 import com.microsoft.azure.PagedList;
-import com.microsoft.azure.management.compute.*;
+import com.microsoft.azure.management.compute.PowerState;
+import com.microsoft.azure.management.compute.VirtualMachine;
+import com.microsoft.azure.management.compute.VirtualMachineScaleSet;
+import com.microsoft.azure.management.compute.VirtualMachineScaleSetVM;
 import com.microsoft.azure.management.compute.implementation.ComputeManager;
-import com.microsoft.azure.management.network.*;
+import com.microsoft.azure.management.network.NetworkInterface;
+import com.microsoft.azure.management.network.NicIPConfiguration;
+import com.microsoft.azure.management.network.PublicIPAddress;
+import com.microsoft.azure.management.network.VirtualMachineScaleSetNetworkInterface;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -94,18 +104,6 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
         }
     }
 
-    private SimpleDiscoveryNode createDiscoveryNode(int port, VirtualMachineScaleSetVM vm,
-                                                    VirtualMachineScaleSetNetworkInterface networkInterface)
-            throws UnknownHostException {
-        String privateIP = networkInterface.primaryPrivateIP();
-        if (getLocalHostAddress() != null && privateIP.equals(getLocalHostAddress())) {
-            Integer faultDomainId = vm.instanceView().platformFaultDomain();
-            updateVirtualMachineMetaData(faultDomainId);
-        }
-        Address privateAddress = new Address(privateIP, port);
-        return new SimpleDiscoveryNode(privateAddress);
-    }
-
     private List<DiscoveryNode> discoverScaleSetVMs(String resourceGroup, String clusterId)
             throws UnknownHostException {
         PagedList<VirtualMachineScaleSet> scaleSets = computeManager.virtualMachineScaleSets()
@@ -132,12 +130,12 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
                 if (primaryNetworkInterfaceId != null) {
                     VirtualMachineScaleSetNetworkInterface networkInterface =
                             vm.getNetworkInterface(primaryNetworkInterfaceId);
-                    nodes.add(createDiscoveryNode(port, vm, networkInterface));
+                    nodes.add(buildDiscoveryNode(port, vm, networkInterface));
                 } else {
                     PagedList<VirtualMachineScaleSetNetworkInterface> networkInterfaces = vm.listNetworkInterfaces();
                     if (networkInterfaces.size() > 0) {
                         VirtualMachineScaleSetNetworkInterface networkInterface = networkInterfaces.get(0);
-                        nodes.add(createDiscoveryNode(port, vm, networkInterface));
+                        nodes.add(buildDiscoveryNode(port, vm, networkInterface));
                     }
                 }
             }
@@ -166,7 +164,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
                 memberMetaData.put(PartitionGroupMetaData.PARTITION_GROUP_ZONE, faultDomainId.toString());
             }
             int port = Integer.parseInt(tags.get(clusterId));
-            DiscoveryNode node = buildDiscoveredNode(faultDomainId, vm, port);
+            DiscoveryNode node = buildDiscoveryNode(faultDomainId, vm, port);
 
             if (node != null) {
                 nodes.add(node);
@@ -180,6 +178,19 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
         // no native resources were allocated so nothing to do here
     }
 
+    private SimpleDiscoveryNode buildDiscoveryNode(int port, VirtualMachineScaleSetVM vm,
+                                                   VirtualMachineScaleSetNetworkInterface networkInterface)
+            throws UnknownHostException {
+        String privateIP = networkInterface.primaryPrivateIP();
+        String localHostAddress = getLocalHostAddress();
+        if (localHostAddress != null && privateIP.equals(localHostAddress)) {
+            Integer faultDomainId = vm.instanceView().platformFaultDomain();
+            updateVirtualMachineMetaData(faultDomainId);
+        }
+        Address privateAddress = new Address(privateIP, port);
+        return new SimpleDiscoveryNode(privateAddress);
+    }
+
     /**
      * Builds a discovery node
      *
@@ -188,23 +199,24 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
      * @param port
      * @return DiscoveryNode the Hazelcast DiscoveryNode
      */
-    private DiscoveryNode buildDiscoveredNode(Integer faultDomainId, VirtualMachine vm, int port)
+    private DiscoveryNode buildDiscoveryNode(Integer faultDomainId, VirtualMachine vm, int port)
             throws UnknownHostException {
         NetworkInterface networkInterface = vm.getPrimaryNetworkInterface();
         for (NicIPConfiguration ipConfiguration : networkInterface.ipConfigurations().values()) {
             PublicIPAddress publicIPAddress = ipConfiguration.getPublicIPAddress();
             String privateIP = ipConfiguration.privateIPAddress();
             Address privateAddress = new Address(privateIP, port);
+            String localHostAddress = getLocalHostAddress();
             if (publicIPAddress != null) {
                 String publicIP = publicIPAddress.ipAddress();
                 Address publicAddress = new Address(publicIP, port);
 
-                if (getLocalHostAddress() != null && publicIP.equals(getLocalHostAddress())) {
+                if (localHostAddress != null && publicIP.equals(localHostAddress)) {
                     updateVirtualMachineMetaData(faultDomainId);
                 }
                 return new SimpleDiscoveryNode(privateAddress, publicAddress);
             }
-            if (getLocalHostAddress() != null && privateIP.equals(getLocalHostAddress())) {
+            if (localHostAddress != null && privateIP.equals(localHostAddress)) {
                 //In private address there is no host name so we are passing null.
                 updateVirtualMachineMetaData(faultDomainId);
             }
