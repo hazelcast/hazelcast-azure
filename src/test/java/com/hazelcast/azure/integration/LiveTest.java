@@ -17,6 +17,7 @@
 package com.hazelcast.azure.integration;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.hazelcast.azure.AzureClientHelper;
 import com.hazelcast.azure.AzureDiscoveryStrategy;
 import com.hazelcast.spi.discovery.DiscoveryNode;
@@ -33,13 +34,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Ignore
 // This test will be used for manual integration test.
@@ -96,7 +94,7 @@ public class LiveTest extends HazelcastTestSupport {
         Deployments deployments = resourceManager.deployments();
         Deployment deployment = deployments.define(deploymentName)
                 .withExistingResourceGroup(GROUP_NAME)
-                .withTemplateLink("https://raw.githubusercontent.com/sedouard/hazelcast-azure/master/src/test/java/com/hazelcast/azure/integration/azuredeploy.json", "1.0.0.0")
+                .withTemplateLink("https://raw.githubusercontent.com/atlassian/hazelcast-azure/master/src/test/java/com/hazelcast/azure/integration/azuredeploy.json", "1.0.0.0")
                 .withParameters(parameters)
                 .withMode(DeploymentMode.INCREMENTAL)
                 .beginCreate();
@@ -128,29 +126,34 @@ public class LiveTest extends HazelcastTestSupport {
         AzureDiscoveryStrategy strategy = new AzureDiscoveryStrategy(properties);
         strategy.start();
 
-        Iterator<DiscoveryNode> nodes = strategy.discoverNodes().iterator();
+        Iterable<DiscoveryNode> nodes = strategy.discoverNodes();
 
         assertNotNull(nodes);
+        assertEquals(5, Iterables.size(nodes));
 
-        int count = 0;
         String ipBase = "10.0.1.10";
-        while (nodes.hasNext()) {
-
-            DiscoveryNode node = nodes.next();
+        for (int i = 0; i < 3; i++) {
+            DiscoveryNode node = Iterables.get(nodes, i);
 
             // first node in the test template has a public ip address
-            if (count == 0) {
+            if (i == 0) {
                 assertTrue(!node.getPrivateAddress().getHost().equals(node.getPublicAddress().getHost()));
             }
 
-            String ip = ipBase + count;
+            String ip = ipBase + i;
 
             assertEquals(ip, node.getPrivateAddress().getHost());
             assertEquals(5701, node.getPrivateAddress().getPort());
             assertEquals(5701, node.getPublicAddress().getPort());
-            count++;
         }
 
-        assertEquals(3, count);
+        assertScaleSetNode(Iterables.get(nodes, 3));
+        assertScaleSetNode(Iterables.get(nodes, 4));
+    }
+
+    private void assertScaleSetNode(DiscoveryNode node) {
+        assertNotNull(node.getPrivateAddress());
+        assertTrue(node.getPrivateAddress().getHost().startsWith("10.0.1"));
+        assertEquals(5701, node.getPrivateAddress().getPort());
     }
 }
