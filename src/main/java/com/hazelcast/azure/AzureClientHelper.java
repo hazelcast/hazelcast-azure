@@ -16,8 +16,13 @@
 
 package com.hazelcast.azure;
 
+import com.hazelcast.logging.ILogger;
+import com.hazelcast.logging.Logger;
 import com.microsoft.azure.credentials.ApplicationTokenCredentials;
+import com.microsoft.azure.credentials.AzureTokenCredentials;
+import com.microsoft.azure.credentials.MSICredentials;
 import com.microsoft.azure.management.compute.implementation.ComputeManager;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
@@ -31,6 +36,8 @@ import static com.hazelcast.azure.AzureProperties.SUBSCRIPTION_ID;
  */
 public final class AzureClientHelper {
 
+    private static final ILogger LOGGER = Logger.getLogger(AzureClientHelper.class);
+
     private AzureClientHelper() {
     }
 
@@ -41,10 +48,17 @@ public final class AzureClientHelper {
      * @return ComputeManager a client to manage compute resources
      */
     public static ComputeManager getComputeManager(Map<String, Comparable> properties) {
-        ApplicationTokenCredentials atc = new ApplicationTokenCredentials(
-                (String) AzureProperties.getOrNull(CLIENT_ID, properties),
-                (String) AzureProperties.getOrNull(TENANT_ID, properties),
-                (String) AzureProperties.getOrNull(CLIENT_SECRET, properties), null);
-        return ComputeManager.authenticate(atc, (String) AzureProperties.getOrNull(SUBSCRIPTION_ID, properties));
+        AzureTokenCredentials atc;
+        String clientId = AzureProperties.getOrNull(CLIENT_ID, properties);
+        if (StringUtils.isBlank(clientId)) {
+            LOGGER.info("Using managed system identity credentials");
+            atc = new MSICredentials();
+        } else {
+            atc = new ApplicationTokenCredentials(
+                    clientId,
+                    AzureProperties.<String>getOrNull(TENANT_ID, properties),
+                    AzureProperties.<String>getOrNull(CLIENT_SECRET, properties), null);
+        }
+        return ComputeManager.authenticate(atc, AzureProperties.<String>getOrNull(SUBSCRIPTION_ID, properties));
     }
 }
