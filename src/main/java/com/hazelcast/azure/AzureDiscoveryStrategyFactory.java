@@ -21,6 +21,7 @@ import com.hazelcast.logging.ILogger;
 import com.hazelcast.spi.discovery.DiscoveryNode;
 import com.hazelcast.spi.discovery.DiscoveryStrategy;
 import com.hazelcast.spi.discovery.DiscoveryStrategyFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,17 +34,14 @@ import java.util.Map;
  */
 public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
 
-    private static final Collection<PropertyDefinition> PROPERTY_DEFINITIONS;
+    private static final Collection<PropertyDefinition> REQUIRED_PROPERTY_DEFINITIONS;
 
     static {
         List<PropertyDefinition> propertyDefinitions = new ArrayList<PropertyDefinition>();
-        propertyDefinitions.add(AzureProperties.CLIENT_ID);
-        propertyDefinitions.add(AzureProperties.CLIENT_SECRET);
         propertyDefinitions.add(AzureProperties.SUBSCRIPTION_ID);
-        propertyDefinitions.add(AzureProperties.TENANT_ID);
         propertyDefinitions.add(AzureProperties.GROUP_NAME);
         propertyDefinitions.add(AzureProperties.CLUSTER_ID);
-        PROPERTY_DEFINITIONS = Collections.unmodifiableCollection(propertyDefinitions);
+        REQUIRED_PROPERTY_DEFINITIONS = Collections.unmodifiableCollection(propertyDefinitions);
     }
 
     @Override
@@ -53,10 +51,9 @@ public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
 
     @Override
     public DiscoveryStrategy newDiscoveryStrategy(DiscoveryNode node, ILogger logger, Map<String, Comparable> properties) {
-
         // validate configuration
-        for (PropertyDefinition prop : PROPERTY_DEFINITIONS) {
-            if (AzureProperties.getOrNull(prop, properties) == null) {
+        for (PropertyDefinition prop : REQUIRED_PROPERTY_DEFINITIONS) {
+            if (StringUtils.isBlank(AzureProperties.<String>getOrNull(prop, properties))) {
                 throw new IllegalArgumentException("Property, " + prop.key() + " cannot be null");
             }
         }
@@ -70,6 +67,6 @@ public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
      * @return {@code Collection<PropertyDefinition>} the property defitions for the AzureDiscoveryStrategy
      */
     public Collection<PropertyDefinition> getConfigurationProperties() {
-        return PROPERTY_DEFINITIONS;
+        return REQUIRED_PROPERTY_DEFINITIONS;
     }
 }

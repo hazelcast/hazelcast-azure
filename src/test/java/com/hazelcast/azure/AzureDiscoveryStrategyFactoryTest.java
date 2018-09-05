@@ -15,51 +15,24 @@
  */
 package com.hazelcast.azure;
 
-import com.hazelcast.azure.AzureProperties;
-import com.hazelcast.azure.AzureDiscoveryStrategy;
-import com.hazelcast.azure.AzureDiscoveryStrategyFactory;
-
-import com.hazelcast.config.Config;
-import com.hazelcast.config.InvalidConfigurationException;
-import com.hazelcast.config.XmlConfigBuilder;
-import com.hazelcast.core.Hazelcast;
+import com.hazelcast.config.properties.PropertyDefinition;
 import com.hazelcast.test.HazelcastParallelClassRunner;
 import com.hazelcast.test.HazelcastTestSupport;
 import com.hazelcast.test.annotation.QuickTest;
-import com.hazelcast.config.properties.PropertyDefinition;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayInputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import static com.hazelcast.util.StringUtil.stringToBytes;
 
 @RunWith(HazelcastParallelClassRunner.class)
 @Category(QuickTest.class)
 public class AzureDiscoveryStrategyFactoryTest extends HazelcastTestSupport {
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testNewDiscoveryFactory() throws Exception {
-
-        Map<String, Comparable> properties = new HashMap<String, Comparable>();
-        properties.put("client-id", "test-value");
-        properties.put("client-secret", "test-value");
-        properties.put("subscription-id", "test-value");
-        properties.put("cluster-id", "test-value");
-        properties.put("group-name", "test-value");
-
-        AzureDiscoveryStrategyFactory factory = new AzureDiscoveryStrategyFactory();
-        factory.newDiscoveryStrategy(null, null, properties);
-    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMissingConfigValue() throws Exception {
@@ -67,7 +40,6 @@ public class AzureDiscoveryStrategyFactoryTest extends HazelcastTestSupport {
         Map<String, Comparable> properties = new HashMap<String, Comparable>();
         properties.put("client-id", "test-value");
         properties.put("client-secret", "test-value");
-        properties.put("subscription-id", "test-value");
         properties.put("cluster-id", "test-value");
         properties.put("group-name", "test-value");
 
@@ -81,10 +53,7 @@ public class AzureDiscoveryStrategyFactoryTest extends HazelcastTestSupport {
         AzureDiscoveryStrategyFactory factory = new AzureDiscoveryStrategyFactory();
         Collection<PropertyDefinition> properties = factory.getConfigurationProperties();
 
-        assertTrue(properties.contains(AzureProperties.CLIENT_ID));
-        assertTrue(properties.contains(AzureProperties.TENANT_ID));
         assertTrue(properties.contains(AzureProperties.SUBSCRIPTION_ID));
-        assertTrue(properties.contains(AzureProperties.CLIENT_SECRET));
         assertTrue(properties.contains(AzureProperties.CLUSTER_ID));
         assertTrue(properties.contains(AzureProperties.GROUP_NAME));
     }
