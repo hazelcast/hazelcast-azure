@@ -53,9 +53,12 @@ public class AzureDiscoveryStrategyFactoryTest extends HazelcastTestSupport {
         AzureDiscoveryStrategyFactory factory = new AzureDiscoveryStrategyFactory();
         Collection<PropertyDefinition> properties = factory.getConfigurationProperties();
 
-        assertTrue(properties.contains(AzureProperties.SUBSCRIPTION_ID));
+        assertTrue(properties.contains(AzureProperties.CLIENT_ID));
+        assertTrue(properties.contains(AzureProperties.CLIENT_SECRET));
         assertTrue(properties.contains(AzureProperties.CLUSTER_ID));
         assertTrue(properties.contains(AzureProperties.GROUP_NAME));
+        assertTrue(properties.contains(AzureProperties.SUBSCRIPTION_ID));
+        assertTrue(properties.contains(AzureProperties.TENANT_ID));
     }
 
     @Test

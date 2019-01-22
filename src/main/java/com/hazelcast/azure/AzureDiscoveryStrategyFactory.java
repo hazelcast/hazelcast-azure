@@ -34,14 +34,21 @@ import java.util.Map;
  */
 public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
 
+    private static final Collection<PropertyDefinition> ALL_PROPERTY_DEFINITIONS;
     private static final Collection<PropertyDefinition> REQUIRED_PROPERTY_DEFINITIONS;
 
     static {
-        List<PropertyDefinition> propertyDefinitions = new ArrayList<PropertyDefinition>();
-        propertyDefinitions.add(AzureProperties.SUBSCRIPTION_ID);
-        propertyDefinitions.add(AzureProperties.GROUP_NAME);
-        propertyDefinitions.add(AzureProperties.CLUSTER_ID);
-        REQUIRED_PROPERTY_DEFINITIONS = Collections.unmodifiableCollection(propertyDefinitions);
+        List<PropertyDefinition> requiredPropertyDefinitions = new ArrayList<PropertyDefinition>();
+        requiredPropertyDefinitions.add(AzureProperties.CLUSTER_ID);
+        requiredPropertyDefinitions.add(AzureProperties.GROUP_NAME);
+        requiredPropertyDefinitions.add(AzureProperties.SUBSCRIPTION_ID);
+        REQUIRED_PROPERTY_DEFINITIONS = Collections.unmodifiableCollection(requiredPropertyDefinitions);
+
+        List<PropertyDefinition> allPropertyDefinitions = new ArrayList<PropertyDefinition>(requiredPropertyDefinitions);
+        allPropertyDefinitions.add(AzureProperties.CLIENT_ID);
+        allPropertyDefinitions.add(AzureProperties.CLIENT_SECRET);
+        allPropertyDefinitions.add(AzureProperties.TENANT_ID);
+        ALL_PROPERTY_DEFINITIONS = Collections.unmodifiableCollection(allPropertyDefinitions);
     }
 
     @Override
@@ -67,6 +74,6 @@ public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
      * @return {@code Collection<PropertyDefinition>} the property defitions for the AzureDiscoveryStrategy
      */
     public Collection<PropertyDefinition> getConfigurationProperties() {
-        return REQUIRED_PROPERTY_DEFINITIONS;
+        return ALL_PROPERTY_DEFINITIONS;
     }
 }
