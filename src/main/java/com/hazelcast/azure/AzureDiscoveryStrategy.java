@@ -50,7 +50,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
     private static final ILogger LOGGER = Logger.getLogger(AzureDiscoveryStrategy.class);
 
     private final Map<String, Comparable> properties;
-    private final Map<String, Object> memberMetaData = new HashMap<String, Object>();
+    private final Map<String, String> memberMetaData = new HashMap<String, String>();
 
     private ComputeManager computeManager;
 
@@ -74,7 +74,7 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
     }
 
     @Override
-    public Map<String, Object> discoverLocalMetadata() {
+    public Map<String, String> discoverLocalMetadata() {
         if (memberMetaData.size() == 0) {
             discoverNodes();
         }

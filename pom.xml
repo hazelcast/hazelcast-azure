@@ -91,9 +91,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- we want to remain java 1.6 compatible -->
-        <java.version>1.6</java.version>
+        <java.version>1.8</java.version>
 
-        <hazelcast.version>3.7.2</hazelcast.version>
+        <hazelcast.version>4.0-SNAPSHOT</hazelcast.version>
 
         <azure.client.authentication.version>1.6.0</azure.client.authentication.version>
         <azure.mgmt.sdk.version>1.14.0</azure.mgmt.sdk.version>
