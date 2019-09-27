@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static com.hazelcast.util.StringUtil.stringToBytes;
+import static com.hazelcast.internal.util.StringUtil.stringToBytes;
 
 @RunWith(HazelcastParallelClassRunner.class)
 @Category(QuickTest.class)
