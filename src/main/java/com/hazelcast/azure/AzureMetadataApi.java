@@ -18,6 +18,7 @@ package com.hazelcast.azure;
 import com.hazelcast.internal.json.Json;
 import com.hazelcast.internal.json.JsonObject;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,6 +73,14 @@ class AzureMetadataApi {
         return getMetadataProperty("vmScaleSetName");
     }
 
+    InetSocketAddress privateAddress() {
+        return InetSocketAddress.createUnresolved(getMetadataProperty("privateIpAddress"), 0);
+    }
+
+    InetSocketAddress publicAddress() {
+        return InetSocketAddress.createUnresolved(getMetadataProperty("publicIpAddress"), 0);
+    }
+
     private String getMetadataProperty(String property) {
         fillMetadata();
         return metadata.get(property);
@@ -79,14 +88,25 @@ class AzureMetadataApi {
 
     private void fillMetadata() {
         if (metadata.isEmpty()) {
-            String urlString = String.format("%s/metadata/instance/compute?api-version=%s", endpoint, API_VERSION);
+            String urlString = String.format("%s/metadata/instance?api-version=%s", endpoint, API_VERSION);
             String response = callGet(urlString);
             JsonObject jsonObject = Json.parse(response).asObject();
-            for (String property : jsonObject.names()) {
-                if (jsonObject.get(property).isString()) {
-                    metadata.put(property, jsonObject.get(property).asString());
+
+            JsonObject compute = jsonObject.get("compute").asObject();
+            for (String property : compute.names()) {
+                if (compute.get(property).isString()) {
+                    metadata.put(property, compute.get(property).asString());
                 }
             }
+
+            JsonObject ipAddress = jsonObject
+                    .get("network").asObject()
+                    .get("interface").asArray().iterator().next().asObject()
+                    .get("ipv4").asObject()
+                    .get("ipAddress").asArray().iterator().next().asObject();
+
+            metadata.put("privateIpAddress", ipAddress.get("privateIpAddress").asString());
+            metadata.put("publicIpAddress", ipAddress.get("publicIpAddress").asString());
         }
     }
 
@@ -99,12 +119,11 @@ class AzureMetadataApi {
 
     private String callGet(String urlString) {
         return RestClient.create(urlString)
-                         .withHeader("Metadata", "true")
-                         .get();
+                .withHeader("Metadata", "true")
+                .get();
     }
 
     private String extractAccessToken(String accessTokenResponse) {
         return Json.parse(accessTokenResponse).asObject().get("access_token").asString();
     }
-
 }
