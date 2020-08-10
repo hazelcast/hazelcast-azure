@@ -57,6 +57,18 @@ public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
         }
         return result;
     }
+
+    /**
+     * Checks if Hazelcast is running on Azure.
+     * <p>
+     * To check if Hazelcast is running on Azure, we first check whether Azure DNS name server is configured as "168.63.129.16"
+     * in "/etc/resolv.conf". Such an approach is not officially documented but seems like a good enough heuristic to detect an
+     * Azure Compute VM Instance. Since it's not the official method, we still need to make an API call to a local, non-routable
+     * address http://169.254.169.254/metadata/instance.
+     *
+     * @return true if running on Azure Instance
+     * @see https://docs.microsoft.com/en-us/azure/virtual-machines/linux/instance-metadata-service#metadata-apis
+     */
     @Override
     public boolean isAutoDetectionApplicable() {
         return azureDnsServerConfigured() && azureInstanceMetadataAvailable();
