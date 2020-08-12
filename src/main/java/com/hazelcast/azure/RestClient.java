@@ -123,7 +123,7 @@ final class RestClient {
                 throw new RestClientException(
                         String.format("Failure executing: %s at: %s", method, url), connection.getResponseCode());
             }
-            throw new RestClientException(String.format("Failure executing: %s at: %s. Message: %d", method, url, errorMessage),
+            throw new RestClientException(String.format("Failure executing: %s at: %s. Message: %s", method, url, errorMessage),
                     connection.getResponseCode());
 
         }
