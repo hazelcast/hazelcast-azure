@@ -37,7 +37,9 @@ import java.util.Map;
  * Factory class which returns {@link AzureDiscoveryStrategy} to Discovery SPI
  */
 public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
+
     private static final ILogger LOGGER = Logger.getLogger(AzureDiscoveryStrategyFactory.class);
+
     @Override
     public Class<? extends DiscoveryStrategy> getDiscoveryStrategyType() {
         return AzureDiscoveryStrategy.class;
