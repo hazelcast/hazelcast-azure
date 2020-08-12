@@ -162,8 +162,8 @@ public class AzureDiscoveryStrategy extends AbstractDiscoveryStrategy {
         } catch (RestClientException e) {
             if (e.getHttpErrorCode() == HTTP_FORBIDDEN) {
                 if (!isKnownExceptionAlreadyLogged) {
-                    LOGGER.warning("There is no role assigned to the service principal! To use Hazelcast Azure discovery assign"
-                           + " a role to the service principal with correct 'Read' permissions. Starting standalone.");
+                    LOGGER.warning("Required role is not assigned to service principal! To use Hazelcast Azure discovery assign"
+                           + " a role to service principal with correct 'Read' permissions. Starting standalone.");
                     isKnownExceptionAlreadyLogged = true;
                 }
                 LOGGER.finest(e);
