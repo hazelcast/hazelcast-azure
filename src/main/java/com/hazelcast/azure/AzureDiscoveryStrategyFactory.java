@@ -63,8 +63,8 @@ public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
     /**
      * Checks if Hazelcast is running on Azure.
      * <p>
-     * To check if Hazelcast is running on Azure, we first check whether Azure DNS name server is configured as "168.63.129.16"
-     * in "/etc/resolv.conf". Such an approach is not officially documented but seems like a good enough heuristic to detect an
+     * To check if Hazelcast is running on Azure, we first check whether "internal.cloudapp.net" is present in the file
+     * "/etc/resolv.conf". Such an approach is not officially documented but seems like a good enough heuristic to detect an
      * Azure Compute VM Instance. Since it's not the official method, we still need to make an API call to a local, non-routable
      * address http://169.254.169.254/metadata/instance.
      *
@@ -77,7 +77,7 @@ public class AzureDiscoveryStrategyFactory implements DiscoveryStrategyFactory {
     }
 
     private static boolean azureDnsServerConfigured() {
-        return readFileContents("/etc/resolv.conf").contains("168.63.129.16");
+        return readFileContents("/etc/resolv.conf").contains("internal.cloudapp.net");
     }
 
     static String readFileContents(String fileName) {
