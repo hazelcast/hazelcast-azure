@@ -72,10 +72,10 @@ jobs:
           sed -i -e "s/SET_PREFIX/\"${GITHUB_WORKFLOW}-${GITHUB_RUN_ID}\"/g" hazelcast-azure/.github/terraform/terraform.tfvars
 
       - name: Terraform Init
-        run: cd hazelcast-aws/.github/terraform && terraform init
+        run: cd hazelcast-azure/.github/terraform && terraform init
 
       - name: Terraform Format
-        run: cd hazelcast-aws/.github/terraform  && terraform fmt
+        run: cd hazelcast-azure/.github/terraform  && terraform fmt
 
       - name: Install private key
         uses: shimataro/ssh-key-action@v2
@@ -93,14 +93,14 @@ jobs:
 
       - name: Terraform Apply
         run: |
-          cd hazelcast-aws/.github/terraform && terraform apply -auto-approve
+          cd hazelcast-azure/.github/terraform && terraform apply -auto-approve
 
       - name: Terraform Show
         if: ${{ always() }}
         run: |
-          cd hazelcast-aws/.github/terraform && terraform show
+          cd hazelcast-azure/.github/terraform && terraform show
 
       - name: Terraform Destroy
         if: ${{ always() }}
         run: |
-          cd hazelcast-aws/.github/terraform && terraform destroy -auto-approve
+          cd hazelcast-azure/.github/terraform && terraform destroy -auto-approve
