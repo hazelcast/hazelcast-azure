@@ -97,11 +97,6 @@ jobs:
         run: |
           cd hazelcast-azure/.github/terraform && terraform apply -auto-approve
 
-      - name: Terraform Show
-        if: ${{ always() }}
-        run: |
-          cd hazelcast-azure/.github/terraform && terraform show
-
       - name: Terraform Destroy
         if: ${{ always() }}
         run: |
