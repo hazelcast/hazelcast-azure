@@ -86,6 +86,9 @@ resource "azurerm_network_interface" "nic" {
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
 
+  tags = {
+    "${var.azure_tag_key}" = var.azure_tag_value
+  }
   ip_configuration {
     name                          = "${var.prefix}_nicconfig_${count.index}"
     subnet_id                     = azurerm_subnet.subnet.id
@@ -104,10 +107,6 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
   network_interface_ids = [azurerm_network_interface.nic[count.index].id]
   size                  = var.azure_instance_type
   admin_username        = var.azure_ssh_user
-
-  tags = {
-    "${var.azure_tag_key}" = var.azure_tag_value
-  }
 
   os_disk {
     name                 = "OsDisk_${count.index}"
@@ -208,10 +207,6 @@ resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
   network_interface_ids = [azurerm_network_interface.nic[var.member_count].id]
   size                  = "Standard_B1ms"
   admin_username        = var.azure_ssh_user
-
-  tags = {
-    "${var.azure_tag_key}" = var.azure_tag_value
-  }
 
   os_disk {
     name                 = "OsDisk"
