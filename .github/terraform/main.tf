@@ -139,7 +139,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
     user        = var.azure_ssh_user
     type        = "ssh"
     private_key = file("${var.local_key_path}/${var.azure_key_name}")
-    timeout     = "60"
+    timeout     = "120"
     agent       = false
   }
 
@@ -183,7 +183,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
       "cd /home/${var.azure_ssh_user}",
       "chmod 0755 start_azure_hazelcast_member.sh",
       "./start_azure_hazelcast_member.sh  ${var.azure_tag_key} ${var.azure_tag_value} ",
-      "sleep 30",
+      "sleep 60",
       "tail -n 20 ./logs/hazelcast.stdout.log"
     ]
   }
@@ -239,7 +239,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
     user        = var.azure_ssh_user
     type        = "ssh"
     private_key = file("${var.local_key_path}/${var.azure_key_name}")
-    timeout     = "60"
+    timeout     = "120"
     agent       = false
   }
 
