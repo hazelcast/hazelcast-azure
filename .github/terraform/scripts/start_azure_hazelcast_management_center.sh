@@ -37,3 +37,5 @@ java -cp ${HOME}/lib/hazelcast-management-center-${MANCENTER_VERSION}.jar com.ha
 
 nohup java  -Dhazelcast.mc.home=${MAN_CENTER_HOME} \
              -jar ${HOME}/lib/hazelcast-management-center-${MANCENTER_VERSION}.jar >> $LOG_DIR/mancenter.stdout.log 2>> $LOG_DIR/mancenter.stderr.log &
+
+sleep 5
