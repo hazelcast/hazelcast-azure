@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -x
 
 TAG_KEY=$1

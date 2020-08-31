@@ -5,7 +5,9 @@ on:
     branches:
       - master
     paths:
-      - '**.java'
+      - 'src/**'
+      - 'pom.xml'
+      - 'github/terraform/**
 
 
 jobs:
