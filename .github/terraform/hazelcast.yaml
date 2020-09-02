@@ -6,3 +6,5 @@ hazelcast:
       azure:
         enabled: true
         tag: TAG_KEY=TAG_VALUE
+    rest-api:
+      enabled: true

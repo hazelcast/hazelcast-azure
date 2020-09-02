@@ -206,7 +206,7 @@ resource "null_resource" "verify_members" {
       "cd /home/${var.azure_ssh_user}",
       "tail -n 20 ./logs/hazelcast.stdout.log",
       "chmod 0755 verify_member_count.sh",
-      "sh verify_member_count.sh  ${var.member_count}",
+      "./verify_member_count.sh  ${var.member_count}",
     ]
   }
 }
