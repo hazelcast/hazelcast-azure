@@ -50,6 +50,7 @@ jobs:
         run: |
           cd hazelcast-azure
           mvn clean install -DskipTests
+          echo "Hazelcast Azure jar is: " target/hazelcast-azure-*-SNAPSHOT.jar
           cp target/hazelcast-azure-*-SNAPSHOT.jar ~/lib/hazelcast-azure.jar
 
       # DOWNLOAD HAZELCAST JAR WITH VERSION DEFINED IN POM.XML
@@ -64,6 +65,7 @@ jobs:
           else
             wget -q "https://repo1.maven.org/maven2/com/hazelcast/hazelcast/$hz_version/hazelcast-$hz_version.jar"
           fi
+          echo "Hazelcast jar is: " hazelcast*.jar
           cp hazelcast*.jar ~/lib/hazelcast.jar
 
       #BUILD TERRAFORM
