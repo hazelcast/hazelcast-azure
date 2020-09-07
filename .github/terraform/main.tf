@@ -212,7 +212,7 @@ resource "null_resource" "verify_members" {
 }
 
 
-  # Create Hazelcast Management Center
+# Create Hazelcast Management Center
 resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
   name                  = "${var.prefix}-mancenter"
   location              = var.location

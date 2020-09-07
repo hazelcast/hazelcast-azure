@@ -42,7 +42,7 @@ variable "azure_instance_type" {
 
 variable "azure_tag_key" {
   type    = string
-  default = "hz-guide"
+  default = "integration-test"
 }
 
 variable "azure_tag_value" {
