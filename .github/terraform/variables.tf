@@ -1,3 +1,7 @@
+variable "prefix" {
+  type    = string
+}
+
 # key name to be assigned to Azure Compute instances
 variable "azure_key_name" {
   type    = string
@@ -13,11 +17,6 @@ variable "local_key_path" {
 variable "location" {
   type    = string
   default = "central us"
-}
-
-variable "prefix" {
-  type    = string
-  default = "hazelcast"
 }
 
 variable "member_count" {
