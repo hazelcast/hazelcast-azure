@@ -56,7 +56,7 @@ jobs:
       # DOWNLOAD HAZELCAST JAR WITH VERSION DEFINED IN POM.XML
       - name: Download latest Hazelcast version
         run: |
-          HZ_VERSION=$(cat hazelcast-aws/pom.xml | grep -m 1 -Po "<hazelcast.version>\K[-_.a-zA-Z0-9]+(?=</hazelcast.version)")
+          HZ_VERSION=$(cat hazelcast-azure/pom.xml | grep -m 1 -Po "<hazelcast.version>\K[-_.a-zA-Z0-9]+(?=</hazelcast.version)")
           if [[ $hz_version == *"SNAPSHOT"* ]]; then
             export HZ_JAR_REPO_URL="https://oss.sonatype.org/content/repositories/snapshots"
           else
