@@ -204,7 +204,7 @@ resource "null_resource" "verify_members" {
   provisioner "remote-exec" {
     inline = [
       "cd /home/${var.azure_ssh_user}",
-      "tail -n 20 ./logs/hazelcast.stdout.log",
+      "tail -n 20 ./logs/hazelcast.logs",
       "chmod 0755 verify_member_count.sh",
       "./verify_member_count.sh  ${var.member_count}",
     ]
