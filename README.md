@@ -9,7 +9,7 @@
     * [Configuration for WAN Replication Target Cluster Discovery](#configuration-for-wan-replication-target-cluster-discovery)
     * [Property Definitions](#property-definitions)
     * [Azure App Services Support](#azure-app-services-support)
-    * [ZONE_AWARE Partition Group](#zone_aware-partition-group)
+    * [High Availability](#high-availability)
 * [Automated Deployment](#automated-deployment)
 
 
@@ -295,7 +295,7 @@ config.getPartitionGroupConfig()
 ```
 
 ***NOTE:*** *When using the `ZONE_AWARE` partition grouping, a cluster spanning multiple availability zones (or fault
-domains if the region does not support zones) should have an equal number of members in each zone (or fault domain).   
+domains if the region does not support zones) should have an equal number of members in each zone (or fault domain). 
 Otherwise, it will result in uneven partition distribution among the members.*
 
 # Automated Deployment
