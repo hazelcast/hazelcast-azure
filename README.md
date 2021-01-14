@@ -250,26 +250,27 @@ Azure App Services are unaware of the underlying VMs' network interfaces so it i
 
 ## High Availability
 
-By default, Hazelcast distributes partition replicas (backups) randomly and equally among the cluster members, assuming
-all the members in a cluster are identical. However, this is not safe in terms of availability when a partition and its
-replicas are stored on the same fault domain or update domain, using the same network or power source, etc. To deal with
-that, Hazelcast offers partition groups each is a logical grouping of members. If there is enough number of partition 
-groups, a partition itself and its backup(s) are not stored within the same group. This way Hazelcast guarantees that a
-possible failure affecting more than one member at a time will not cause data loss. The details of partition groups can
-be found on the documentation:
+By default, Hazelcast distributes partition replicas (backups) randomly and equally among cluster members. However, this
+is not safe in terms of high availability when a partition and its replicas are stored on the same rack, using the same
+network, or power source. To deal with that, Hazelcast offers logical partition grouping, so that a partition itself and
+its backup(s) would not be stored within the same group. This way Hazelcast guarantees that a possible failure affecting
+more than one member at a time will not cause data loss. The details of partition groups can be found in the documentation:
 [Partition Group Configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/#partition-group-configuration)
 
 In addition to built-in grouping option `ZONE_AWARE`, you can customize the formation of
-these groups based on the network interfaces of members. See more details on custom groups on the documentation:
+these groups based on the network interfaces of members. See more details on custom groups in the documentation:
 [Custom Partition Groups](https://docs.hazelcast.org/docs/latest/manual/html-single/#custom).
 
-### Zone Aware
+### Multi-Zone Deployments
 
-If `ZONE_AWARE` partition group is enabled, the backup(s) of a partition will be in a different availability zone
-other than the partition's residing zone. If no other partition group is found in other zones, the backup(s) will
-be stored in the same zone as the partition itself. Note that if a cluster is deployed to an Azure region that does not
-support availability zones, then the fault domains of instances are used when forming partition groups. That is, the 
-members on fault domain (FD) 0 form a single group, and those on FD 1 form another group, and so on. 
+If `ZONE_AWARE` partition group is enabled, the backup(s) of a partition is always stored in a different availability
+zone. Note that if a cluster is deployed to an Azure region that does not support availability zones, then the fault
+domains of instances are used when forming partition groups. That is, the members on fault domain (FD) 0 form a single
+group, and those on FD 1 form another group, and so on.
+
+***NOTE:*** *When using the `ZONE_AWARE` partition grouping, a cluster spanning multiple availability zones (or fault
+domains if the region does not support zones) should have an equal number of members in each zone (or fault domain).
+Otherwise, it will result in uneven partition distribution among the members.*
 
 #### XML Configuration
 
@@ -293,10 +294,6 @@ config.getPartitionGroupConfig()
     .setEnabled(true)
     .setGroupType(MemberGroupType.ZONE_AWARE);
 ```
-
-***NOTE:*** *When using the `ZONE_AWARE` partition grouping, a cluster spanning multiple availability zones (or fault
-domains if the region does not support zones) should have an equal number of members in each zone (or fault domain). 
-Otherwise, it will result in uneven partition distribution among the members.*
 
 # Automated Deployment
 
