@@ -1,3 +1,5 @@
+#### **DEPRECATED:** `hazelcast-azure` plugin has been merged with [`hazelcast`](https://github.com/hazelcast/hazelcast)!
+
 # Table of Contents
 
 * [Introduction](#hazelcast-discovery-plugin-for-microsoft-azure)
