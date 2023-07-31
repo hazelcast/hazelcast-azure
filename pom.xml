@@ -266,7 +266,7 @@
             <artifactId>azure-mgmt-compute</artifactId>
             <version>${azure.mgmt.sdk.version}</version>
         </dependency>
-        <!-- This dependency is here to patch a vulnerability in the version of okhttp exported by
+        <!-- This dependency is here to patch a vulnerability in the version of okhttp used by
         azure-client-authentication. More information can be found here: https://github.com/square/okhttp/issues/6738
         -->
         <dependency>
