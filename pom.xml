@@ -111,6 +111,7 @@
         <atomikos.version>3.9.3</atomikos.version>
         <log4j.version>1.2.12</log4j.version>
         <bytebuddy.version>1.6.12</bytebuddy.version>
+        <okhttp.version>4.9.2</okhttp.version>
     </properties>
 
     <build>
@@ -253,11 +254,25 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-client-authentication</artifactId>
             <version>${azure.client.authentication.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.squareup.okhttp3</groupId>
+                    <artifactId>okhttp</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-mgmt-compute</artifactId>
             <version>${azure.mgmt.sdk.version}</version>
+        </dependency>
+        <!-- This dependency is here to patch a vulnerability in the version of okhttp used by
+        azure-client-authentication. More information can be found here: https://github.com/square/okhttp/issues/6738
+        -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
