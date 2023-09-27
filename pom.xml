@@ -111,7 +111,7 @@
         <atomikos.version>3.9.3</atomikos.version>
         <log4j.version>1.2.12</log4j.version>
         <bytebuddy.version>1.6.12</bytebuddy.version>
-        <okhttp.version>4.9.2</okhttp.version>
+        <okhttp.version>4.10.0</okhttp.version>
     </properties>
 
     <build>
