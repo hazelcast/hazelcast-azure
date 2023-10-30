@@ -103,6 +103,7 @@
         <maven.rar.plugin.version>2.2</maven.rar.plugin.version>
         <maven.gpg.plugin.version>1.4</maven.gpg.plugin.version>
         <maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
+        <nimbus.version>6.5</nimbus.version>
 
         <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
@@ -265,6 +266,11 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-mgmt-compute</artifactId>
             <version>${azure.mgmt.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>${nimbus.version}</version>
         </dependency>
         <!-- This dependency is here to patch a vulnerability in the version of okhttp used by
         azure-client-authentication. More information can be found here: https://github.com/square/okhttp/issues/6738
