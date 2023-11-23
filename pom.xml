@@ -90,7 +90,7 @@
 
         <hazelcast.version>3.7.2</hazelcast.version>
 
-        <azure.client.authentication.version>1.7.2</azure.client.authentication.version>
+        <azure.client.authentication.version>1.7.14</azure.client.authentication.version>
         <azure.mgmt.sdk.version>1.14.0</azure.mgmt.sdk.version>
 
         <maven.findbugs.plugin.version>3.0.0</maven.findbugs.plugin.version>
@@ -103,7 +103,7 @@
         <maven.rar.plugin.version>2.2</maven.rar.plugin.version>
         <maven.gpg.plugin.version>1.4</maven.gpg.plugin.version>
         <maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
-        <nimbus.version>6.5</nimbus.version>
+        <nimbus.version>9.4</nimbus.version>
 
         <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
