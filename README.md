@@ -1,5 +1,5 @@
 #### **DEPRECATED:** `hazelcast-azure` plugin has been merged with [`hazelcast`](https://github.com/hazelcast/hazelcast)!
-Since version `5.0` `hazelcast` includes `hazelcast-azure` and does not require additional dependency. For details about running Hazelcast on Azure consider the [documentation](https://docs.hazelcast.com/hazelcast/5.0-SNAPSHOT/deploy/deploying-on-azure.html).
+Since version `5.0` `hazelcast` includes `hazelcast-azure` and does not require additional dependency. For details about running Hazelcast on Azure consider the [documentation](https://docs.hazelcast.com/hazelcast/latest/deploy/deploying-on-azure.html).
 
 
 # Table of Contents
