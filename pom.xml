@@ -104,6 +104,7 @@
         <maven.gpg.plugin.version>1.4</maven.gpg.plugin.version>
         <maven.javadoc.plugin.version>2.9</maven.javadoc.plugin.version>
         <nimbus.version>9.4</nimbus.version>
+        <nimbus.jose.jwt.version>9.37.3</nimbus.jose.jwt.version>
 
         <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
@@ -266,6 +267,11 @@
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-mgmt-compute</artifactId>
             <version>${azure.mgmt.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus.jose.jwt.version}</version>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
